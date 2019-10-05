@@ -1,0 +1,1 @@
+from sample_chatbot.wsgi import application as app

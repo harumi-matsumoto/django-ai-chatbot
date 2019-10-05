@@ -1,34 +1,32 @@
 from __future__ import unicode_literals
-from argparse import ArgumentParser
+
 import errno
+import json
 import os
+import re
 import sys
 import tempfile
-import re
-import json
+from argparse import ArgumentParser
 
-from google.appengine.ext import ndb
-from linebot import (
-    LineBotApi, WebhookHandler
-)
-from linebot.exceptions import (
-    LineBotApiError, InvalidSignatureError
-)
-from linebot.models import (
-    MessageEvent, TextMessage, TextSendMessage,
-    SourceUser, SourceGroup, SourceRoom,
-    TemplateSendMessage, ConfirmTemplate, MessageAction,
-    ButtonsTemplate, ImageCarouselTemplate, ImageCarouselColumn, URIAction,
-    PostbackAction, DatetimePickerAction,
-    CameraAction, CameraRollAction, LocationAction,
-    CarouselTemplate, CarouselColumn, PostbackEvent,
-    StickerMessage, StickerSendMessage, LocationMessage, LocationSendMessage,
-    ImageMessage, VideoMessage, AudioMessage, FileMessage,
-    UnfollowEvent, FollowEvent, JoinEvent, LeaveEvent, BeaconEvent,
-    FlexSendMessage, BubbleContainer, ImageComponent, BoxComponent,
-    TextComponent, SpacerComponent, IconComponent, ButtonComponent,
-    SeparatorComponent, QuickReply, QuickReplyButton
-)
+from linebot import LineBotApi, WebhookHandler
+from linebot.exceptions import InvalidSignatureError, LineBotApiError
+from linebot.models import (AudioMessage, BeaconEvent, BoxComponent,
+                            BubbleContainer, ButtonComponent, ButtonsTemplate,
+                            CameraAction, CameraRollAction, CarouselColumn,
+                            CarouselTemplate, ConfirmTemplate,
+                            DatetimePickerAction, FileMessage, FlexSendMessage,
+                            FollowEvent, IconComponent, ImageCarouselColumn,
+                            ImageCarouselTemplate, ImageComponent,
+                            ImageMessage, JoinEvent, LeaveEvent,
+                            LocationAction, LocationMessage,
+                            LocationSendMessage, MessageAction, MessageEvent,
+                            PostbackAction, PostbackEvent, QuickReply,
+                            QuickReplyButton, SeparatorComponent, SourceGroup,
+                            SourceRoom, SourceUser, SpacerComponent,
+                            StickerMessage, StickerSendMessage,
+                            TemplateSendMessage, TextComponent, TextMessage,
+                            TextSendMessage, UnfollowEvent, URIAction,
+                            VideoMessage)
 
 from .predictor import Predictors
 
@@ -53,6 +51,7 @@ class LineBotApiJSON(LineBotApi):
             '/v2/bot/message/reply', data=json.dumps(data), timeout=timeout
         )
 
+
 # get channel_secret and channel_access_token from your environment variable
 channel_secret = os.getenv('LINE_CHANNEL_SECRET', None)
 channel_access_token = os.getenv('LINE_CHANNEL_ACCESS_TOKEN', None)
@@ -67,6 +66,7 @@ if channel_access_token is None:
 line_bot_api = LineBotApiJSON(channel_access_token)
 
 handler = WebhookHandler(channel_secret)
+
 
 def callback(request):
     # get X-Line-Signature header value
@@ -94,11 +94,10 @@ def predict(data):
         sentence = request.GET.get('sentence')
         p = Predictor()
         result = p.execute(sentence)
-        chat_data.append([sentence,result['Label']])
+        print(result)
         return HttpResponse(result['Words'])
     else:
         return HttpResponse("データが不正です")
-
 
 
 @handler.add(MessageEvent, message=TextMessage)
@@ -577,6 +576,7 @@ def handle_beacon(event):
         TextSendMessage(
             text='Got beacon event. hwid={}, device_message(hex string)={}'.format(
                 event.beacon.hwid, event.beacon.dm)))
+
 
 # ユーザデータの取得
 def get_line_user():
