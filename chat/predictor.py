@@ -1,12 +1,14 @@
 import MeCab
 import pandas as pd
-from sklearn.externals import joblib
+from joblib import load
 from sklearn.feature_extraction.text import TfidfVectorizer
+
+from django.contrib.staticfiles.storage import staticfiles_storage
 
 # ラベルや学習モデルはずっとかわらないので、staticで持っておくのがいいかもしれない
 # 一回一回読み込んでたら死ぬのでは？
-static_sentence_csv = pd.read_csv('app/static/app/file/data.csv')
-static_reply_csv = pd.read_csv('app/static/app/file/reply.csv')
+static_sentence_csv = pd.read_csv('chat/static/chat/file/data.csv')
+static_reply_csv = pd.read_csv('chat/static/chat/file/reply.csv')
 
 
 class Predictor():
@@ -41,27 +43,23 @@ class Predictor():
 
     def execute(self, sentence):
         # データ読み込み
-        m = joblib.load("app/static/app/pkl/model.pkl")
-        le = joblib.load("app/static/app/pkl/le.pkl")
-        v = joblib.load("app/static/app/pkl/vocabulary.pkl")
-        # x = joblib.load("app/static/app/pkl/X.pkl")
-        # y = joblib.load("app/static/app/pkl/Y.pkl")
-        # print(m)
-        # print(le)
-        # 予測
-        self.text.append(sentence)
-        tv = TfidfVectorizer(analyzer=self.extract_words, vocabulary=v)
-        # tv.fit(self.text)
-        # try:
-        print(self.text)
-        new_data = tv.fit_transform(self.text)
-        classify = m.predict(new_data)
+        m = load(staticfiles_storage.url('chat/pkl/model.pkl'))
+        le = load(staticfiles_storage.url('chat/pkl/le.pkl'))
+        v = load(staticfiles_storage.url('chat/pkl/vocabulary.pkl'))
 
-        # 戻り値呼び出し
-        compatible_class = le.inverse_transform(classify)
-        print(compatible_class)
-        result = static_reply_csv.query('Label == ' + str(compatible_class))
-        print(result["Words"])
-        return result
-        # except:
-        #    return "ごめんね。何言ってるかわからないや。"
+        try:
+            # 予測
+            self.text.append(sentence)
+            tv = TfidfVectorizer(analyzer=self.extract_words, vocabulary=v)
+            print(self.text)
+            new_data = tv.fit_transform(self.text)
+            classify = m.predict(new_data)
+
+            # 戻り値呼び出し
+            compatible_class = le.inverse_transform(classify)
+            print(compatible_class)
+            result = static_reply_csv.query('Label == ' + str(compatible_class))
+            print(result["Words"])
+            return result
+        except:
+            return "ごめんね。何を言っているのかわからなかった...。"
