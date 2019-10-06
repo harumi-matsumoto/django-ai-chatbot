@@ -41,8 +41,6 @@ from .forms import TestPredictForm
 # LINE Settings
 channel_secret = getattr(settings, "LINE_CHANNEL_SECRET", None)
 channel_access_token = getattr(settings, 'LINE_CHANNEL_ACCESS_TOKEN', None)
-print(channel_access_token)
-print(channel_secret)
 
 if channel_secret is None:
     print('Specify LINE_CHANNEL_SECRET as environment variable.')
@@ -99,8 +97,9 @@ def callback(request):
 
 @handler.add(MessageEvent, message=TextMessage)
 def handle_text_message(event):
+    result = predict(event.message.text)
     line_bot_api.reply_message(event.reply_token,
-                               TextSendMessage(text=event.message.text))
+                               TextSendMessage(text=result))
 
 
 @handler.add(MessageEvent, message=LocationMessage)

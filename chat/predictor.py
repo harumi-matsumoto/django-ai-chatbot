@@ -3,8 +3,6 @@ import pandas as pd
 from joblib import load
 from sklearn.feature_extraction.text import TfidfVectorizer
 
-from django.contrib.staticfiles.storage import staticfiles_storage
-
 # ラベルや学習モデルはずっとかわらないので、staticで持っておくのがいいかもしれない
 # 一回一回読み込んでたら死ぬのでは？
 static_sentence_csv = pd.read_csv('chat/static/chat/file/data.csv')
@@ -43,23 +41,24 @@ class Predictor():
 
     def execute(self, sentence):
         # データ読み込み
-        m = load(staticfiles_storage.url('chat/pkl/model.pkl'))
-        le = load(staticfiles_storage.url('chat/pkl/le.pkl'))
-        v = load(staticfiles_storage.url('chat/pkl/vocabulary.pkl'))
+        m = load("chat/static/chat/pkl/model.pkl")
+        le = load("chat/static/chat/pkl/le.pkl")
+        v = load("chat/static/chat/pkl/vocabulary.pkl")
 
         try:
             # 予測
             self.text.append(sentence)
             tv = TfidfVectorizer(analyzer=self.extract_words, vocabulary=v)
-            print(self.text)
             new_data = tv.fit_transform(self.text)
-            classify = m.predict(new_data)
-
+            classify = m.predict(X=new_data)
+            print(text)
+            print(new_data.shape)
             # 戻り値呼び出し
             compatible_class = le.inverse_transform(classify)
             print(compatible_class)
             result = static_reply_csv.query('Label == ' + str(compatible_class))
             print(result["Words"])
             return result
-        except:
-            return "ごめんね。何を言っているのかわからなかった...。"
+        except Exception as e:
+            print(f"error: {e}")
+            return "ごめんね。何を言っているのかわからなかった..."
