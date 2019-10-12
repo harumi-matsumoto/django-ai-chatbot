@@ -1,2 +1,10 @@
+# SECRET INFO:
 secret.yaml
 .env
+
+# Python pycache:
+__pycache__/
+
+# git
+.git
+.gitignore

@@ -51,14 +51,12 @@ class Predictor():
             tv = TfidfVectorizer(analyzer=self.extract_words, vocabulary=v)
             new_data = tv.fit_transform(self.text)
             classify = m.predict(X=new_data)
-            print(text)
-            print(new_data.shape)
             # 戻り値呼び出し
             compatible_class = le.inverse_transform(classify)
             print(compatible_class)
             result = static_reply_csv.query('Label == ' + str(compatible_class))
             print(result["Words"])
-            return result
+            return result.values[0][1]
         except Exception as e:
             print(f"error: {e}")
             return "ごめんね。何を言っているのかわからなかった..."
