@@ -8,3 +8,6 @@ __pycache__/
 # git
 .git
 .gitignore
+
+# vscode
+.vscode
